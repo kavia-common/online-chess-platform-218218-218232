@@ -13,15 +13,20 @@ describe("App UI interactions", () => {
     render(<App />);
 
     // Initially, no selection -> 0 legal moves in debug panel.
-    expect(screen.getByText("Legal moves").parentElement).toHaveTextContent("0");
+    // Note: the left "Game" panel contains similar rows; scope to the right "Debug" panel.
+    const debugPanel = screen.getByText("Debug").closest("section");
+    expect(debugPanel).not.toBeNull();
+    const debug = within(debugPanel);
+
+    expect(debug.getByText("Legal moves").parentElement).toHaveTextContent("0");
 
     // Select white pawn on e2.
     await user.click(square("e2"));
 
     // Debug panel should show selection and legal move count.
-    expect(screen.getByText("Selected").parentElement).toHaveTextContent("e2");
+    expect(debug.getByText("Selected").parentElement).toHaveTextContent("e2");
     // e2 pawn should have 2 legal moves at start: e3 and e4
-    expect(screen.getByText("Legal moves").parentElement).toHaveTextContent("2");
+    expect(debug.getByText("Legal moves").parentElement).toHaveTextContent("2");
 
     // Target squares should be visually marked as targets.
     expect(square("e3").className).toMatch(/\bsqTarget\b/);
@@ -51,8 +56,12 @@ describe("App UI interactions", () => {
     const moveList = screen.getByRole("list", { name: /move list/i });
     expect(moveList).toHaveTextContent(/\b(e4)\b/);
 
-    // Last move debug should show e2→e4
-    expect(screen.getByText("Last move").parentElement).toHaveTextContent("e2→e4");
+    // Last move debug should show e2→e4 (scope to Debug panel to avoid ambiguity)
+    const debugPanel = screen.getByText("Debug").closest("section");
+    expect(debugPanel).not.toBeNull();
+    const debug = within(debugPanel);
+
+    expect(debug.getByText("Last move").parentElement).toHaveTextContent("e2→e4");
   });
 
   test("checkmate status updates on Fool's mate sequence", async () => {
